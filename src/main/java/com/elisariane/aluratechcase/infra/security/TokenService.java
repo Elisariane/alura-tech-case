@@ -18,11 +18,13 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
+    private final String ISSUER = "API elisariane.com";
+
     public String generateToken(User user) {
         try {
             var algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer("API elisariane.com")
+                    .withIssuer(ISSUER)
                     .withSubject(user.getUsername())
                     .withExpiresAt(dateExpiration())
                     .sign(algorithm);
@@ -39,7 +41,7 @@ public class TokenService {
         try {
             var algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
-                    .withIssuer("API Voll.med")
+                    .withIssuer(ISSUER)
                     .build()
                     .verify(token)
                     .getSubject();
