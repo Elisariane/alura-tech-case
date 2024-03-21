@@ -38,7 +38,7 @@ public class User implements UserDetails {
 
     @NotBlank
     @Column(unique = true)
-    @Email
+    @Email(message = "Email not formatted correctly")
     private String email;
 
     @NotBlank
