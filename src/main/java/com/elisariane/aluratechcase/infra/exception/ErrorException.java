@@ -1,6 +1,9 @@
 package com.elisariane.aluratechcase.infra.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,10 +24,19 @@ public class ErrorException {
         return ResponseEntity.badRequest().body(errors.stream().map(DataValidationErrors::new).toList());
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity getErrorConstraintViolation(ConstraintViolationException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getConstraintViolations().stream().map(DataValidationErrors::new).toList());
+    }
+
 
     private record DataValidationErrors(String field, String message) {
         public DataValidationErrors(FieldError error){
             this(error.getField(), error.getDefaultMessage());
+        }
+
+        public DataValidationErrors(ConstraintViolation<?> constraintViolation) {
+            this(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage());
         }
     }
 
