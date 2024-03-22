@@ -2,12 +2,15 @@ package com.elisariane.aluratechcase.service;
 
 import com.elisariane.aluratechcase.domain.course.Course;
 import com.elisariane.aluratechcase.domain.course.CourseRegistrationData;
+import com.elisariane.aluratechcase.domain.course.DataListCourse;
 import com.elisariane.aluratechcase.domain.user.Role;
 import com.elisariane.aluratechcase.domain.user.User;
 import com.elisariane.aluratechcase.repositories.CourseRepository;
 import com.elisariane.aluratechcase.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -56,6 +59,10 @@ public class CourseService {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    public Page<DataListCourse> getAllCourses(Pageable pageable){
+        return repository.findAll(pageable).map(DataListCourse::new);
     }
 
 }
