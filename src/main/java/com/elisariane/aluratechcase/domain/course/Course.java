@@ -48,7 +48,7 @@ public class Course {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(updatable = false)
+    @Column()
     private LocalDateTime disabledAt;
 
 
@@ -58,6 +58,12 @@ public class Course {
         this.instructorId = instructor;
         this.status = true;
         this.description = courseRegistrationData.description();
+    }
+
+    public Course inativacted() {
+        this.disabledAt = LocalDateTime.now();
+        this.status = false;
+        return this;
     }
 
 

@@ -47,4 +47,15 @@ public class CourseService {
         return ResponseEntity.status(HttpStatus.CREATED).body("Course created successfully with the code: " + newCourse.getCode());
     }
 
+    @Transactional
+    public ResponseEntity<String> inactivated(String code) {
+        Optional<Course> optionalCourse = repository.findByCode(code);
+        if (optionalCourse.isPresent()) {
+            repository.save(optionalCourse.get().inativacted());
+            return ResponseEntity.ok().body("Course is inactivated successfully");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
