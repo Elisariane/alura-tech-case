@@ -1,6 +1,7 @@
 package com.elisariane.aluratechcase.domain.rate;
 
 import com.elisariane.aluratechcase.domain.course.Course;
+import com.elisariane.aluratechcase.domain.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -33,10 +34,16 @@ public class Rate {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    public Rate(RateRegistrationData registrationData, Course course) {
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private User student;
+
+
+    public Rate(RateRegistrationData registrationData, Course course, User student) {
         this.score = registrationData.score();
         this.rateDescription = registrationData.rateDescription();
         this.course = course;
+        this.student = student;
     }
 
 }

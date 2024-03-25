@@ -2,6 +2,8 @@ package com.elisariane.aluratechcase.service;
 
 import com.elisariane.aluratechcase.domain.course.Course;
 import com.elisariane.aluratechcase.domain.rate.Rate;
+import com.elisariane.aluratechcase.domain.rate.RateNPS;
+import com.elisariane.aluratechcase.domain.rate.RateNPSDetailed;
 import com.elisariane.aluratechcase.domain.rate.RateRegistrationData;
 import com.elisariane.aluratechcase.domain.user.User;
 import com.elisariane.aluratechcase.repositories.CourseRepository;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -31,9 +34,16 @@ public class RateService {
     public ResponseEntity<String> evaluateCourse(RateRegistrationData rateRegistrationData) {
         Optional<Course> course = courseRepository.findByCode(rateRegistrationData.courseCode());
         Optional<User> instructor = userRepository.findById(course.get().getInstructorId());
+        Optional<User> student = userRepository.findById(rateRegistrationData.studentId());
 
-        if (course.isEmpty()) {
+        if (course.isEmpty() || student.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+
+        Optional<Rate> rate = repository.findByStudentIdAndCourseId(student.get().getId(), course.get().getId());
+
+        if (rate.isPresent()) {
+            return ResponseEntity.badRequest().body("The student already evaluate this course!");
         }
 
         if (rateRegistrationData.score() < 6) {
@@ -41,10 +51,17 @@ public class RateService {
                 return ResponseEntity.badRequest().body("The field 'rate description' can't be blank if score is under 6");
             }
             
-            EmailSender.send(instructor.get().getEmail(), course.get().getName(), rateRegistrationData.rateDescription());
+                EmailSender.send(instructor.get().getEmail(), course.get().getName(), rateRegistrationData.rateDescription());
         }
         
-        repository.save(new Rate(rateRegistrationData, course.get()));
+        repository.save(new Rate(rateRegistrationData, course.get(), student.get()));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    public List<RateNPSDetailed> getNPSOfCourses() {
+        List<RateNPS> allRateNPSList = repository.calculateNpsForCoursesWithFourOrMoreEnrollments();
+
+        return allRateNPSList.stream().map(rateNPS -> new RateNPSDetailed(rateNPS.course().getName(), rateNPS.course().getCode(), rateNPS.promoters(), rateNPS.detractors(), rateNPS.nps())).toList();
+    }
+
 }
